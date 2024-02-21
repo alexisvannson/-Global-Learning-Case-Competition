@@ -4,7 +4,9 @@ This script performs breast cancer image classification using Hugging Face's Neu
 
 ## Overview
 
-Breast cancer is a critical health issue, and early detection plays a crucial role in effective treatment. Image classification techniques, especially deep learning models, have shown promising results in detecting breast cancer from histopathological images.
+This script empowers breast cancer image classification using Hugging Face's Neural Decision Forests (NDF) framework. Leveraging a pre-trained Vision Transformer (ViT) for feature extraction and the NDF model for classification, the script contributes to the critical mission of early cancer detection in the pursuit of social change.
+Addressing Social Change
+Breast cancer remains a significant global health challenge, particularly in underprivileged communities with limited access to healthcare resources. Early detection plays a pivotal role in improving treatment outcomes and reducing mortality rates. By harnessing the power of artificial intelligence, this script aims to democratize access to accurate and timely breast cancer diagnosis, thereby advancing the cause of social equity in healthcare.
 
 This script aims to:
 
@@ -52,6 +54,9 @@ python breast_cancer_classification.py
 
 - You can customize the script by adjusting parameters such as image size, model architecture, and training epochs to better suit your dataset and requirements.
 - Experiment with different pre-trained models available in the Hugging Face Transformers library for feature extraction.
+
+## Advancing Healthcare Equity
+This project underscores the transformative potential of artificial intelligence in healthcare, emphasizing the importance of democratizing access to innovative diagnostic tools. By promoting equitable healthcare delivery, the initiative seeks to mitigate disparities in breast cancer diagnosis and treatment outcomes.
 
 ## Credits
 
