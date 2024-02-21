@@ -5,8 +5,9 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from transformers import NDF, ViTFeatureExtractor
 from google.colab import files
-#exported from google colab
-files.upload()#json kaggle key
+
+#upload on google colab
+files.upload() #json kaggle key
 !pip install kaggle
 !mkdir -p ~/.kaggle
 !cp kaggle.json ~/.kaggle/
@@ -76,8 +77,8 @@ sequential_model.compile(optimizer='adam',
                          metrics=['accuracy'])
 
 # Train the model
-sequential_model.fit(X_train_features['pixel_values'], y_train, epochs=10, validation_data=(X_val_features['pixel_values'], y_val))
+# sequential_model.fit(X_train_features['pixel_values'], y_train, epochs=10, validation_data=(X_val_features['pixel_values'], y_val))
 
 # Evaluate the model
-loss, accuracy = sequential_model.evaluate(X_test_features['pixel_values'], y_test)
-print(f'Test Loss: {loss}, Test Accuracy: {accuracy}')
+# loss, accuracy = sequential_model.evaluate(X_test_features['pixel_values'], y_test)
+# print(f'Test Loss: {loss}, Test Accuracy: {accuracy}')
