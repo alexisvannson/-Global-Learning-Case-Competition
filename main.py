@@ -39,12 +39,13 @@ for folder in os.listdir(dataset_path):
                         if os.path.isfile(image_path):
                             try:
                                 image = Image.open(image_path)
-                                image = image.resize((128, 128))  # Resize to a fixed size
+                                image = image.resize((224, 224)) # Resize images to 224x224 pixels
                                 image = np.array(image) / 255.0  # Normalize pixel values
                                 images.append(image)
                                 labels.append(int(subfolder))  # '1' for cancer, '0' for healthy
                             except Exception as e:
                                 print(f"Error processing image {image_path}: {e}")
+                        
 
 # Convert lists to numpy arrays
 images = np.array(images)
@@ -55,7 +56,8 @@ X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
 # Load ViT feature extractor
-feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k-finetuned-imagenet')
+# Load ViT feature extractor
+feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
 
 # Extract features from the images
 X_train_features = feature_extractor(images=X_train.tolist(), return_tensors='np', padding=True, truncation=True)
