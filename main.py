@@ -1,86 +1,50 @@
-import os
 import numpy as np
+import os
 from PIL import Image
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-from transformers import NDF, ViTFeatureExtractor
-from google.colab import files
+from transformers import ViTFeatureExtractor
+from some_custom_ndf_library import NDF  # Make sure to import your NDF model correctly
 
-#upload on google colab
-files.upload() #json kaggle key
-!pip install kaggle
-!mkdir -p ~/.kaggle
-!cp kaggle.json ~/.kaggle/
-!kaggle datasets download -d paultimothymooney/breast-histopathology-images
+# Assume Kaggle dataset is already downloaded and extracted to 'dataset_path'
+dataset_path = "path/to/breast-histopathology-images"  
 
-!unzip -q breast-histopathology-images.zip
-
-# Load the breast cancer image dataset
-dataset_path = "/content"  
-
+# Placeholder for images and labels
 images = []
 labels = []
 
-count = 0
+# Efficiently load images and labels
+for folder_name in os.listdir(dataset_path):
+    folder_path = os.path.join(dataset_path, folder_name)
+    for image_name in os.listdir(folder_path):
+        image_path = os.path.join(folder_path, image_name)
+        try:
+            image = Image.open(image_path).resize((224, 224))
+            images.append(np.array(image) / 255.0)  # Normalize pixel values
+            labels.append(int(folder_name))  # Assuming folder name is the label
+        except Exception as e:
+            print(f"Error processing image {image_path}: {e}")
 
-# Load images and labels from the dataset path
-for folder in os.listdir(dataset_path):
-    folder_path = os.path.join(dataset_path, folder)
-    if os.path.isdir(folder_path):
-        count += 1
-        if count > 10:
-            break 
-        else: 
-            for subfolder in os.listdir(folder_path):
-                subfolder_path = os.path.join(folder_path, subfolder)
-                if os.path.isdir(subfolder_path):
-                    for image_name in os.listdir(subfolder_path):
-                        image_path = os.path.join(subfolder_path, image_name)
-                        if os.path.isfile(image_path):
-                            try:
-                                image = Image.open(image_path)
-                                image = image.resize((224, 224)) # Resize images to 224x224 pixels
-                                image = np.array(image) / 255.0  # Normalize pixel values
-                                images.append(image)
-                                labels.append(int(subfolder))  # '1' for cancer, '0' for healthy
-                            except Exception as e:
-                                print(f"Error processing image {image_path}: {e}")
-                        
-
-# Convert lists to numpy arrays
+# Convert to numpy arrays and split the dataset
 images = np.array(images)
 labels = np.array(labels)
-
-# Split the dataset into training, validation, and testing sets
 X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=42)
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=42)
 
-# Load ViT feature extractor
-# Load ViT feature extractor
+# Initialize ViT feature extractor
 feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
 
-# Extract features from the images
-X_train_features = feature_extractor(images=X_train.tolist(), return_tensors='np', padding=True, truncation=True)
-X_val_features = feature_extractor(images=X_val.tolist(), return_tensors='np', padding=True, truncation=True)
-X_test_features = feature_extractor(images=X_test.tolist(), return_tensors='np', padding=True, truncation=True)
-
-# Define the NDF model
+# Define the NDF model (assuming NDF is properly defined or imported)
 model = NDF(num_layers=3, num_trees=5, depth=3, num_classes=2)
 
-# Create a sequential model
-sequential_model = tf.keras.Sequential([
-    tf.keras.layers.InputLayer(input_shape=X_train_features['pixel_values'].shape[1:]),
-    model
-])
+# Create a TensorFlow dataset for more efficient loading
+train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(32)
+val_dataset = tf.data.Dataset.from_tensor_slices((X_val, y_val)).batch(32)
 
-# Compile the model
-sequential_model.compile(optimizer='adam',
-                         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                         metrics=['accuracy'])
+# Model compilation and training
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.fit(train_dataset, validation_data=val_dataset, epochs=10)
 
-# Train the model
- sequential_model.fit(X_train_features['pixel_values'], y_train, epochs=10, validation_data=(X_val_features['pixel_values'], y_val))
-
-# Evaluate the model
- loss, accuracy = sequential_model.evaluate(X_test_features['pixel_values'], y_test)
- print(f'Test Loss: {loss}, Test Accuracy: {accuracy}')
+# Evaluation
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f"Test Loss: {loss}, Test Accuracy: {accuracy}")
